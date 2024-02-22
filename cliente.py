@@ -23,7 +23,7 @@ import random
 #use uma das 3 opcoes para atribuir à variável a porta usada
 #serialName = "/dev/ttyACM0"           # Ubuntu (variacao de)
 #serialName = "/dev/tty.usbmodem1411" # Mac    (variacao de)
-serialName = "COM5"                  # Windows(variacao de)
+serialName = "COM3"                  # Windows(variacao de)
 
 
 def main():
@@ -47,9 +47,10 @@ def main():
 
         i=0
         while i <= sorteio:
-            j = random.randint(0, len(lista_comandos))
+            j = random.randint(0, len(lista_comandos)-1)
             envio.append(lista_comandos[j])
             i+=1
+        
 
                   
         #aqui você deverá gerar os dados a serem transmitidos. 
@@ -57,7 +58,7 @@ def main():
         #nome de txBuffer. Esla sempre irá armazenar os dados a serem enviados.
         
         #txBuffer = imagem em bytes!
-        txBuffer = bytearray(envio)
+        txBuffer = envio
         print("meu array de bytes tem tamanho {}" .format(len(txBuffer)))
         #faça aqui uma conferência do tamanho do seu txBuffer, ou seja, quantos bytes serão enviados.
        

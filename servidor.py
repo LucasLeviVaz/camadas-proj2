@@ -59,27 +59,12 @@ def main():
         for i in range(len(rxBuffer)):
             print("recebeu {}" .format(rxBuffer[i]))
         
-
-        '''# Carega imagem
-        print ("Carregando imagem para transmissão :")
-        print (" - {}".format(ImageR))
-        print("---------------------------------------------")
-        txBuffer = open(ImageR, 'rb').read()
-
-        #Escreve arquivo cópia
-        print ("Salvando dados no arquivo :")
-        print (" - {}".format (ImageW))
-        f = open (ImageW, 'wb')
-        f.write(rxBuffer)
-        # Fecha arquivo de imagem
-        f.close()
-            
     
         # Encerra comunicação
         print("-------------------------")
         print("Comunicação encerrada")
         print("-------------------------")
-        com1.disable()'''
+        com1.disable()
         
     except Exception as erro:
         print("ops! :-\\")
