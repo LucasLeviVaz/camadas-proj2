@@ -13,6 +13,7 @@
 from enlace import *
 import time
 import numpy as np
+import random
 
 # voce deverá descomentar e configurar a porta com através da qual ira fazer comunicaçao
 #   para saber a sua porta, execute no terminal :
@@ -38,10 +39,17 @@ def main():
         #Se chegamos até aqui, a comunicação foi aberta com sucesso. Faça um print para informar.
         print("Abriu a comunicação")
         
-        # Endereco da imagem a ser transmitida
-        ImageR = './imgs/image.png'
-        # Endereco da imagem a ser salva
-        ImageW = 'imgs/recebidaCopia.png'
+        lista_comandos = [b'\x00\x00\x00\x00', b'\x00\x00\xFF\x00', b'\xFF\x00\x00', b'\x00\xFF\x00', b'\x00\x00\xFF', b'\x00\xFF', b'\xFF\x00', b'\x00', b'\xFF']
+        envio = []
+        
+        sorteio = random.randint(10, 30)
+        print(sorteio)
+
+        i=0
+        while i <= sorteio:
+            j = random.randint(0, len(lista_comandos))
+            envio.append(lista_comandos[j])
+            i+=1
 
                   
         #aqui você deverá gerar os dados a serem transmitidos. 
@@ -49,8 +57,7 @@ def main():
         #nome de txBuffer. Esla sempre irá armazenar os dados a serem enviados.
         
         #txBuffer = imagem em bytes!
-        txBuffer = open(ImageR, 'rb').read()  #isso é um array de bytes
-       
+        txBuffer = bytearray(envio)
         print("meu array de bytes tem tamanho {}" .format(len(txBuffer)))
         #faça aqui uma conferência do tamanho do seu txBuffer, ou seja, quantos bytes serão enviados.
        
@@ -85,7 +92,7 @@ def main():
             print("recebeu {}" .format(rxBuffer[i]))
         
 
-        # Carega imagem
+        '''# Carega imagem
         print ("Carregando imagem para transmissão :")
         print (" - {}".format(ImageR))
         print("---------------------------------------------")
@@ -104,7 +111,7 @@ def main():
         print("-------------------------")
         print("Comunicação encerrada")
         print("-------------------------")
-        com1.disable()
+        com1.disable()'''
         
     except Exception as erro:
         print("ops! :-\\")
