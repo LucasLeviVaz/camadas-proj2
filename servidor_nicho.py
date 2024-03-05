@@ -18,7 +18,6 @@ serialName = "COM5"
 
 def main():
     try:
-        protocol = b'\x14'
 
         print("Iniciou o main")
 
@@ -33,22 +32,43 @@ def main():
         com1.rx.clearBuffer() 
         time.sleep(.1)
 
-        time.sleep(3)
+        time.sleep(2)
 
-        Buffer = com1.rx.getAllBuffer(0)
-        print(f'Esse é o nosso buffer: {Buffer}')
+        head = [1, 1, 1, 1]
+        eop_certo = b'\xAA'*4
 
-        lista_comandos = Buffer.split(protocol)
-        print(f'Essa é a lista de comandos recebida: {lista_comandos}')
+        # 0 tipo da mensagem, 1 e 2 nome do arquivo, 3 tamanho do payload, 4 quantos pacotes, 5 em qual pacote estou, resto, b'\x00'
 
-        num_comandos = len(lista_comandos) - 1
-        #num_comandos = 1
-        print(f'Esse é a quantidade de comandos recebidas: {num_comandos}')
+        i=0
+        # Loop para cada um dos pacotes
+        while i < head[4]:
+            head = com1.getData(10)[0]
+            n_bytes_enviado = head[3]
 
-        bytes = num_comandos.to_bytes(1, 'big') 
-        print(f'Esse é o dado que será enviado para o client: {bytes}')
+            n_bytes_recebido = com1.rx.getBufferLen()
+            payload = com1.getData(n_bytes_enviado)[0]
+            eop = com1.getData(4)[0]
 
-        com1.sendData(bytes)
+            # Tipo 6 (erros)
+            if n_bytes_enviado != n_bytes_recebido or eop != eop_certo:
+                tipo6 = b'\x06' + b'\x00'*9
+                head_s = tipo6 + eop_certo
+                com1.sendData(head_s)
+
+                #colocar no header a partir de q pacote enviar dnv
+
+
+            # Tipo 1
+            elif head[0] == 1:
+                tipo2 = b'\x02' + b'\x00'*9
+                head_s = tipo2 + eop_certo
+                com1.sendData(head_s)
+
+
+
+
+            i = head[5]
+
 
         # Encerra comunicação
         print("-------------------------")

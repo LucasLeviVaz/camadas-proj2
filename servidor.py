@@ -23,7 +23,7 @@ import random
 #use uma das 3 opcoes para atribuir à variável a porta usada
 #serialName = "/dev/ttyACM0"           # Ubuntu (variacao de)
 #serialName = "/dev/tty.usbmodem1411" # Mac    (variacao de)
-serialName = "COM4"                  # Windows(variacao de)
+serialName = "COM5"                  # Windows(variacao de)
 
 
 def main():
@@ -39,7 +39,7 @@ def main():
         print("esperando 1 byte de sacrifício")
         rxBuffer, nRx = com1.getData(1)
         com1.rx.clearBuffer()
-        time.sleep(1)
+        time.sleep(3)
         # Ativa comunicacao. Inicia os threads e a comunicação seiral 
         #Se chegamos até aqui, a comunicação foi aberta com sucesso. Faça um print para informar.
           
@@ -57,6 +57,11 @@ def main():
         # #acesso aos bytes recebidos
 
         #recebe 1 por 1
+
+        recebido = com1.rx.getAllBuffer(1)
+        recebido = recebido.decode('utf-8')
+        recebido.split("\x14")
+        print(recebido)
         j = 0
         condicao = True
         while condicao:
