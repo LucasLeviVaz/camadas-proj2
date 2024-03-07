@@ -37,15 +37,16 @@ def main():
 
         head = [1, 1, 1, 1, 1, 0]
         eop_certo = b'\xAA'*4
+        n_bytes_total = 0
+        confere = 0
 
         imageW = './imgs/recebidaCopia.png'
 
         # 0 tipo da mensagem, 1 e 2 nome do arquivo, 3 tamanho do payload, 4 quantos pacotes, 5 em qual pacote estou, resto, b'\x00'
 
-        i=0
         # Loop para cada um dos pacotes
         while head[5] < head[4]:
-
+            
             head = com1.getData(10)[0]
             n_bytes_enviado = head[3]
 
@@ -56,41 +57,44 @@ def main():
             qual_pacote = head[5]
             qual_pacote_bytes = qual_pacote.to_bytes(1, byteorder='big')
 
-            # Tipo 6 (erros)
-            if n_bytes_enviado != n_bytes_recebido or eop != eop_certo:
-                head_s = b'\x06' + qual_pacote_bytes + b'\x00'*8 + eop_certo 
-                com1.sendData(head_s)
 
-                #colocar no header a partir de q pacote enviar dnv
+            if confere != payload:
 
+                # Tipo 6 (erros)
+                if n_bytes_enviado != n_bytes_recebido or eop != eop_certo:
+                    head_s = b'\x06' + qual_pacote_bytes + b'\x00'*8 + eop_certo 
+                    com1.sendData(head_s)
+                    com1.rx.clearBuffer()
 
-            # Tipo 1
-            elif head[0] == 1:
-                head_s = b'\x02' + qual_pacote_bytes + b'\x00'*8 + eop_certo 
-                com1.sendData(head_s)
-                img_bytes = payload
+                # Tipo 1
+                elif head[0] == 1:
+                    head_s = b'\x02' + qual_pacote_bytes + b'\x00'*8 + eop_certo 
+                    com1.sendData(head_s)
+                    img_bytes = b''
 
-            # Tipo 3
-            elif head[0] == 3:
-                head_s = b'\x04' + qual_pacote_bytes + b'\x00'*8 + eop_certo 
-                com1.sendData(head_s)
-               
-                print(i)
-                print(head[5])
-                print(head[4])
-                img_bytes += payload
-
+                # Tipo 3
+                elif head[0] == 3:
+                    head_s = b'\x04' + qual_pacote_bytes + b'\x00'*8 + eop_certo 
+                    com1.sendData(head_s)
+                
+                    img_bytes += payload   
+                    n_bytes_total += n_bytes_recebido
 
 
-            if head[5] == head[4]:
-                i +=1
+                confere = payload
+
             else:
-                i = head[5]
+                print('jumper desconectado')
+
+                
+            print(f'recebi {n_bytes_total}')
 
         
         print(img_bytes)
+        print(len(img_bytes))
         imagem = open(imageW, 'wb')
         imagem = imagem.write(img_bytes)
+        # imagem = imagem.read()
 
 
         # Encerra comunicação
