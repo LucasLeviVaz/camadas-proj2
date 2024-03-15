@@ -33,7 +33,6 @@ def main():
 
         time.sleep(2)
 
-        head = [1, 1, 1, 1, 1, 0]
         eop_certo = b'\xAA'*4
         n_bytes_total = 0
         ult_payload = 0
@@ -43,25 +42,29 @@ def main():
 
         # 0 tipo da mensagem, 1 e 2 nome do arquivo, 3 tamanho do payload, 4 quantos pacotes, 5 em qual pacote estou, resto, b'\x00'
         while j <= 2:
+            head = [1, 1, 1, 1, 1, 0]
+
             # Loop para cada um dos pacotes
-            while head[5] < head[4]:
+            while head[5] < (head[4]):
 
 
                 inicio = time.time() 
                 inicio_r = time.time()
 
                 # Timout
-                while (time.time() - inicio) < 10:
-                    #print(time.time()-inicio)
+                while (time.time() - inicio) < 10.5:
 
-                    if (time.time() - inicio_r) > 2:
+                    if (time.time() - inicio) > 10:
+                        head_s = b'\x05' + b'\x00' * 9 + eop_certo
                         com1.sendData(head_s)
-                        inicio_r = time.time()
-
-                    if (time.time() - inicio) > 10: 
                         print("Tempo esgotado...")
                         com1.disable()
                         sys.exit()
+
+                    elif (time.time() - inicio_r) > 2:
+                        com1.sendData(head_s)
+                        inicio_r = time.time()
+                        print(time.time()-inicio)
 
 
                     # Ping-pong
@@ -75,24 +78,41 @@ def main():
 
                         inicio = -100
 
+
+                        if head[0] == 5:
+                            print("Tempo esgotado...")
+                            com1.disable()
+                            sys.exit()
+
+
+                        # Tipo 1
+                        if head[0] == 1:
+                            qual_pacote = head[5]
+                            qual_pacote_bytes = qual_pacote.to_bytes(1, byteorder='big')
+                            head_s = b'\x02' + qual_pacote_bytes + b'\x00'*8 + eop_certo 
+                            com1.sendData(head_s)
+                            img_bytes = b''
+                            imageW = './imgs/' + str(head[1]) + str(head[2]) + '.png'
+
+
                         # Tipo 6 (erros)
-                        if n_bytes_enviado != n_bytes_recebido or eop != eop_certo:
+                        elif n_bytes_enviado != n_bytes_recebido or eop != eop_certo:
                             qual_pacote = head[5]
                             qual_pacote_bytes = qual_pacote.to_bytes(1, byteorder='big')
                             head_s = b'\x06' + qual_pacote_bytes + b'\x00'*8 + eop_certo 
                             com1.sendData(head_s)
                             com1.rx.clearBuffer()
 
-                        # Tipo 1
-                        elif head[0] == 1:
-                            qual_pacote = head[5]
-                            qual_pacote_bytes = qual_pacote.to_bytes(1, byteorder='big')
-                            head_s = b'\x02' + qual_pacote_bytes + b'\x00'*8 + eop_certo 
-                            com1.sendData(head_s)
-                            img_bytes = b''
-                            # nome_img_1 = head[1].decode('utf-8')
-                            # nome_img_2 = head[2].decode('utf-8')
-                            # imageW = './imgs/' + nome_img_1 + nome_img_2 + '.png'
+                            if j == 1:
+                                mensagem_erro = f"Erro detectado no pacote {qual_pacote}.\n"
+                                with open('log_erros_arq1.txt', 'a') as arquivo_log:
+                                    arquivo_log.write(mensagem_erro)
+                            
+                            else:
+                                mensagem_erro = f"Erro detectado no pacote {qual_pacote}.\n"
+                                with open('log_erros_arq2.txt', 'a') as arquivo_log:
+                                    arquivo_log.write(mensagem_erro)
+
 
                         # Tipo 3
                         elif head[0] == 3:
@@ -118,8 +138,13 @@ def main():
             
             imagem = open(imageW, 'wb')
             imagem = imagem.write(img_bytes)
+            print('----------------------')
+            print('I m a g e m  s a l v a')
+            print('----------------------')
             img_bytes = b''
+            n_bytes_total = 0
             j+=1
+            time.sleep(1)
 
 
         # Encerra comunicação
